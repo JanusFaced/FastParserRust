@@ -1,0 +1,8 @@
+services:
+  parser:
+    image: rust_parser
+    build:
+      context: ./parser
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
