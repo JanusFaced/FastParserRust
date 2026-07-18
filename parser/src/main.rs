@@ -1,13 +1,24 @@
+use std::time::{Duration, UNIX_EPOCH, SystemTime};
+use std::thread::{sleep};
+
 fn main() {
-    println!("Hello, World from Rust!");
-    println!("Press Ctrl+C to stop...");
+    println!("Start app on Rust!");
     
-    // Бесконечный цикл, чтобы программа не завершалась
+    let mut counter = 0;
+    let maxCounter = 10;
+
     loop {
-        std::thread::sleep(std::time::Duration::from_secs(1));
-        println!("Still running... {}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs());
+        sleep(Duration::from_secs(1));
+
+        counter += 1;
+
+        println!("Still running... {}", counter);
+
+        if counter >= maxCounter {
+            counter = 0;
+            println!("big number!");
+        } else {
+            println!("little number!");
+        }
     }
 }
