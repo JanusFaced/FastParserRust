@@ -1,35 +1,51 @@
-use std::error::Error;
-use std::thread;
-use std::time::Duration;
+use ccxt_exchanges::binance::Binance;
+use ccxt_rust::prelude::*;
+use anyhow::Result;
+use std::collections::HashMap;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let timeSleep = 5;
-    let mut counter = 0;
-    loop {
-        let a = 100;
-        let b = 10.0;
-        let c = "100";
-        let d = "10.0";
-        let e = "Hello!";
-        let f: [i64; 0] = [];
-        let g: [f64; 0] = [];
-        let h: [String; 0] = [];
-        let i = true;
+#[tokio::main]
+async fn main() -> Result<()> {
+    println!("=== Start parsing! ===\n");
+    let exchange = setup_exchange().await?;
+    
+    let symbols = vec!["BTC/USDT", "ETH/USDT", "BNB/USDT"];
+    let timeframe = "1d";
+    let tailSize = 10;
 
-        println!("{:?}", a);
-        println!("{:?}", b);
-        println!("{:?}", c);
-        println!("{:?}", d);
-        println!("{:?}", e);
-        println!("{:?}", f);
-        println!("{:?}", g);
-        println!("{:?}", h);
-        println!("{:?}", i);
+    for symbol in &symbols {
+        println!("✅ symbol =  {} \n", symbol);
+       
+        let ohlcv_data = exchange
+            .fetch_ohlcv(symbol, timeframe, None, None, None)
+            .await?;
 
-        thread::sleep(Duration::from_secs(timeSleep));
-        counter += 1;
-        println!("counter = {:?}", counter);
+        println!(
+            "{:<20} {:>10} {:>10} {:>10} {:>10} {:>10}",
+            "Дата", "Open", "High", "Low", "Close", "Volume"
+        );
+        println!(
+            "{:-<20} {:-<10} {:-<10} {:-<10} {:-<10} {:-<10}",
+            "", "", "", "", "", ""
+        );
+        
+        for candle in ohlcv_data.iter().rev().take(tailSize).rev() {
+            let date = chrono::DateTime::from_timestamp_millis(candle.timestamp)
+                .unwrap()
+                .format("%Y-%m-%d");
+            
+            println!(
+                "{:>20} {:>10.2} {:>10.2} {:>10.2} {:>10.2} {:>10.2}",
+                date, candle.open, candle.high, candle.low, candle.close, candle.volume
+            );
+        }
     }
 
     Ok(())
+}
+
+async fn setup_exchange() -> Result<Binance> {
+    let exchange = Binance::builder().build()?;
+    exchange.load_markets(false).await?;
+    println!("✅ Рынки загружены!\n");
+    Ok(exchange)
 }
