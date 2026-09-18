@@ -5,7 +5,7 @@ Simple and Fast parser for cryptocurrency tickets
 ## Start project
 
 ```bash
-source start,sh
+source start.sh
 ```
 
 ## Лицензия
